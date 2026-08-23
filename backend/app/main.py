@@ -17,6 +17,8 @@ from backend.app.routers.suppliers import router as suppliers_router
 from backend.app.routers.products import router as products_router
 from backend.app.routers.sales import router as sales_router
 from backend.app.routers.inventory_transactions import (router as inventory_transactions_router,)
+from backend.app.routers.analytics import router as analytics_router
+
 
 
 app = FastAPI(
@@ -29,6 +31,7 @@ app.include_router(suppliers_router)
 app.include_router(products_router)
 app.include_router(sales_router)
 app.include_router(inventory_transactions_router)
+app.include_router(analytics_router)
 
 @app.get("/health")
 def health_check():
