@@ -135,3 +135,31 @@ def get_low_stock_products(
         }
         for product in products
     ]
+
+def get_top_products(
+    db: Session,
+    limit: int = 10,
+) -> list[dict]:
+
+    statement = (
+        select(
+            Product.id,
+            Product.name,
+            func.sum(Sale.quantity).label("units_sold"),
+        )
+        .join(Sale, Sale.product_id == Product.id)
+        .group_by(Product.id, Product.name)
+        .order_by(func.sum(Sale.quantity).desc())
+        .limit(limit)
+    )
+
+    rows = db.execute(statement).all()
+
+    return [
+        {
+            "product_id": row.id,
+            "product_name": row.name,
+            "units_sold": int(row.units_sold),
+        }
+        for row in rows
+    ]

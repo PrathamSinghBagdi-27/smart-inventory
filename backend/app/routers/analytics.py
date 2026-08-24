@@ -4,12 +4,16 @@ from sqlalchemy.orm import Session
 from backend.app.core.database import get_db
 from backend.app.schemas.analytics import DashboardResponse
 from backend.app.schemas.sales_trend import SalesTrendPoint
+from backend.app.schemas.top_products import TopProduct
+from backend.app.schemas.low_stock import LowStockProduct
+# from backend.app.schemas.low_stock import LowStockProduct
 from backend.app.services.analytics import (
     get_dashboard_stats,
     get_sales_trend,
     get_low_stock_products,
+    get_top_products,
 )
-from backend.app.schemas.low_stock import LowStockProduct
+
 
 
 router = APIRouter(
@@ -46,3 +50,14 @@ def low_stock(
     db: Session = Depends(get_db),
 ):
     return get_low_stock_products(db)
+
+
+@router.get(
+    "/top-products",
+    response_model=list[TopProduct],
+)
+def top_products(
+    limit: int = Query(default=10, ge=1, le=50),
+    db: Session = Depends(get_db),
+):
+    return get_top_products(db, limit)

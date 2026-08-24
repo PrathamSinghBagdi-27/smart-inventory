@@ -11,6 +11,7 @@
 
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.routers.categories import router as categories_router
 from backend.app.routers.suppliers import router as suppliers_router
@@ -18,11 +19,23 @@ from backend.app.routers.products import router as products_router
 from backend.app.routers.sales import router as sales_router
 from backend.app.routers.inventory_transactions import (router as inventory_transactions_router,)
 from backend.app.routers.analytics import router as analytics_router
+from backend.app.routers.forecast import router as forecast_router
 
 
 
 app = FastAPI(
     title="Smart Inventory Intelligence System",
+)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -32,7 +45,7 @@ app.include_router(products_router)
 app.include_router(sales_router)
 app.include_router(inventory_transactions_router)
 app.include_router(analytics_router)
-
+app.include_router(forecast_router)
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
