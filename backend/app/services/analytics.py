@@ -81,3 +81,57 @@ def get_dashboard_stats(db: Session) -> dict:
         "inventory_value": float(inventory_value),
         "top_selling_products": top_selling_products,
     }
+
+
+def get_sales_trend(
+    db: Session,
+    days: int = 30,
+) -> list[dict]:
+
+    sale_date = func.date(Sale.sold_at)
+
+    statement = (
+        select(
+            sale_date.label("date"),
+            func.sum(Sale.quantity).label("units_sold"),
+            func.count(Sale.id).label("sales_count"),
+        )
+        .group_by(sale_date)
+        .order_by(sale_date)
+        .limit(days)
+    )
+
+    rows = db.execute(statement).all()
+
+    return [
+        {
+            "date": row.date,
+            "units_sold": int(row.units_sold),
+            "sales_count": int(row.sales_count),
+        }
+        for row in rows
+    ]
+
+def get_low_stock_products(
+    db: Session,
+) -> list[dict]:
+
+    products = db.scalars(
+        select(Product)
+        .where(Product.current_stock <= Product.reorder_level)
+        .order_by(Product.current_stock.asc())
+    ).all()
+
+    return [
+        {
+            "product_id": product.id,
+            "product_name": product.name,
+            "current_stock": product.current_stock,
+            "reorder_level": product.reorder_level,
+            "recommended_reorder": max(
+                product.reorder_level * 2 - product.current_stock,
+                0,
+            ),
+        }
+        for product in products
+    ]
