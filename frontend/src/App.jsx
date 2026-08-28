@@ -10,6 +10,7 @@ import {
   createCategory,
   getSuppliers,
   createSupplier,
+  updateProduct,
 } from './api'
 
 function buildSalesPath(data) {
@@ -118,6 +119,11 @@ const [productSearch, setProductSearch] = useState('')
 const [productFilter, setProductFilter] = useState('all')
 const isProductsPage = activePage === 'products'
 const [showAddProduct, setShowAddProduct] = useState(false)
+const [editingProduct, setEditingProduct] =
+  useState(null)
+
+const [showEditProduct, setShowEditProduct] =
+  useState(false)
 
 
     const [productForm, setProductForm] = useState({
@@ -493,6 +499,37 @@ useEffect(() => {
                   ? 'LOW STOCK'
                   : 'HEALTHY'}
               </div>
+
+              <button
+  type="button"
+  className="edit-product-button"
+  onClick={() => {
+    setEditingProduct(product)
+
+    setProductForm({
+      name: product.name,
+      sku: product.sku,
+      category_id: String(
+        product.category_id
+      ),
+      supplier_id:
+        product.supplier_id !== null
+          ? String(product.supplier_id)
+          : '',
+      price: String(product.price),
+      current_stock: String(
+        product.current_stock
+      ),
+      reorder_level: String(
+        product.reorder_level
+      ),
+    })
+
+    setShowEditProduct(true)
+  }}
+>
+  ✏️
+</button>
 
             </div>
           )
@@ -1741,6 +1778,295 @@ console.log(
     </div>
   </div>
 )}
+
+
+
+{showEditProduct && editingProduct && (
+  <div
+    className="reorder-overlay"
+    onClick={() => {
+      setShowEditProduct(false)
+      setEditingProduct(null)
+    }}
+  >
+    <div
+      className="reorder-modal add-product-modal"
+      onClick={(event) =>
+        event.stopPropagation()
+      }
+    >
+
+      <div className="reorder-modal-header">
+
+        <div>
+          <h2>✏️ Edit Product</h2>
+
+          <p>
+            Update product information.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          className="close-button"
+          onClick={() => {
+            setShowEditProduct(false)
+            setEditingProduct(null)
+          }}
+        >
+          ×
+        </button>
+
+      </div>
+
+      <form
+        className="add-product-form"
+        onSubmit={async (event) => {
+          event.preventDefault()
+
+          try {
+
+            const updatedProduct =
+              await updateProduct(
+                editingProduct.id,
+                {
+                  name: productForm.name,
+                  sku: productForm.sku,
+                  category_id: Number(
+                    productForm.category_id
+                  ),
+                  supplier_id:
+                    productForm.supplier_id
+                      ? Number(
+                          productForm.supplier_id
+                        )
+                      : null,
+                  price: Number(
+                    productForm.price
+                  ),
+                  // current_stock: Number(
+                  //   productForm.current_stock
+                  // ),
+                  reorder_level: Number(
+                    productForm.reorder_level
+                  ),
+                }
+              )
+
+            setProducts(
+              (currentProducts) =>
+                currentProducts.map(
+                  (product) =>
+                    product.id ===
+                    updatedProduct.id
+                      ? updatedProduct
+                      : product
+                )
+            )
+
+            setShowEditProduct(false)
+            setEditingProduct(null)
+
+            console.log(
+              'PRODUCT UPDATED:',
+              updatedProduct
+            )
+
+          } catch (error) {
+
+            console.error(
+              'UPDATE PRODUCT FAILED:',
+              error
+            )
+
+            alert(error.message)
+          }
+        }}
+      >
+
+        <label>
+          Product Name
+
+          <input
+            type="text"
+            required
+            value={productForm.name}
+            onChange={(event) =>
+              setProductForm({
+                ...productForm,
+                name: event.target.value,
+              })
+            }
+          />
+        </label>
+
+        <label>
+          SKU
+
+          <input
+            type="text"
+            required
+            value={productForm.sku}
+            onChange={(event) =>
+              setProductForm({
+                ...productForm,
+                sku: event.target.value,
+              })
+            }
+          />
+        </label>
+
+        <div className="form-row">
+
+          <div className="category-field">
+
+            <label>
+              Category
+            </label>
+
+            <select
+              required
+              value={productForm.category_id}
+              onChange={(event) =>
+                setProductForm({
+                  ...productForm,
+                  category_id:
+                    event.target.value,
+                })
+              }
+            >
+              <option value="">
+                Select a category
+              </option>
+
+              {categories.map(
+                (category) => (
+                  <option
+                    key={category.id}
+                    value={category.id}
+                  >
+                    {category.name}
+                  </option>
+                )
+              )}
+            </select>
+
+          </div>
+
+          <div className="supplier-field">
+
+            <label>
+              Supplier
+            </label>
+
+            <select
+              value={
+                productForm.supplier_id
+              }
+              onChange={(event) =>
+                setProductForm({
+                  ...productForm,
+                  supplier_id:
+                    event.target.value,
+                })
+              }
+            >
+              <option value="">
+                No supplier
+              </option>
+
+              {suppliers.map(
+                (supplier) => (
+                  <option
+                    key={supplier.id}
+                    value={supplier.id}
+                  >
+                    {supplier.name}
+                  </option>
+                )
+              )}
+
+            </select>
+
+          </div>
+
+        </div>
+
+        <div className="form-row">
+
+          <label>
+            Price
+
+            <input
+              type="number"
+              required
+              min="0"
+              step="0.01"
+              value={productForm.price}
+              onChange={(event) =>
+                setProductForm({
+                  ...productForm,
+                  price: event.target.value,
+                })
+              }
+            />
+          </label>
+
+          {/* <label>
+            Current Stock
+
+            <input
+              type="number"
+              required
+              min="0"
+              value={
+                productForm.current_stock
+              }
+              onChange={(event) =>
+                setProductForm({
+                  ...productForm,
+                  current_stock:
+                    event.target.value,
+                })
+              }
+            />
+          </label> */}
+
+        </div>
+
+        <label>
+          Reorder Level
+
+          <input
+            type="number"
+            required
+            min="0"
+            value={
+              productForm.reorder_level
+            }
+            onChange={(event) =>
+              setProductForm({
+                ...productForm,
+                reorder_level:
+                  event.target.value,
+              })
+            }
+          />
+        </label>
+
+        <button
+          type="submit"
+          className="action-button"
+        >
+          Save Changes
+        </button>
+
+      </form>
+
+    </div>
+  </div>
+)}
+
 
 
 </main>

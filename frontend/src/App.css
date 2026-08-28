@@ -1094,3 +1094,21 @@ footer {
 .new-supplier-button:hover {
   text-decoration: underline;
 }
+
+
+
+.edit-product-button {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #292c3a;
+  border-radius: 8px;
+  background: #171925;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.edit-product-button:hover {
+  border-color: #6366f1;
+  transform: translateY(-1px);
+}

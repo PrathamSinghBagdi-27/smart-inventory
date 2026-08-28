@@ -3,9 +3,11 @@ from sqlalchemy.orm import Session
 
 from backend.app.core.database import get_db
 from backend.app.schemas.inventory_transaction import (
+    InventoryTransactionCreate,
     InventoryTransactionResponse,
 )
 from backend.app.services.inventory_transaction import (
+    create_inventory_transaction,
     get_inventory_transaction,
     get_inventory_transactions,
     get_product_transactions,
@@ -27,6 +29,38 @@ def list_inventory_transactions(
 ):
     return get_inventory_transactions(db)
 
+
+
+@router.post(
+    "",
+    response_model=InventoryTransactionResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def add_inventory_transaction(
+    transaction_data: InventoryTransactionCreate,
+    db: Session = Depends(get_db),
+):
+    transaction, error = (
+        create_inventory_transaction(
+            db,
+            transaction_data,
+        )
+    )
+
+    if error is not None:
+
+        status_code_value = (
+            status.HTTP_404_NOT_FOUND
+            if error == "Product not found"
+            else status.HTTP_400_BAD_REQUEST
+        )
+
+        raise HTTPException(
+            status_code=status_code_value,
+            detail=error,
+        )
+
+    return transaction
 
 @router.get(
     "/{transaction_id}",

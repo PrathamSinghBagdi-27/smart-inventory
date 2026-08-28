@@ -156,3 +156,32 @@ export async function createSupplier(
 
   return response.json()
 }
+
+
+export async function updateProduct(
+  productId,
+  productData
+) {
+  const response = await fetch(
+    `${API_BASE}/api/v1/products/${productId}`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(productData),
+    }
+  )
+
+  if (!response.ok) {
+    const errorData =
+      await response.json().catch(() => null)
+
+    throw new Error(
+      errorData?.detail ||
+      `Product update failed: ${response.status}`
+    )
+  }
+
+  return response.json()
+}

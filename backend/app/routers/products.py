@@ -7,6 +7,7 @@ from backend.app.services.product import (
     create_product,
     get_product,
     get_products,
+    update_product,
 )
 
 
@@ -59,6 +60,36 @@ def add_product(
     if error is not None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
+            detail=error,
+        )
+
+    return product
+
+@router.put(
+    "/{product_id}",
+    response_model=ProductResponse,
+)
+def edit_product(
+    product_id: int,
+    product_data: ProductCreate,
+    db: Session = Depends(get_db),
+):
+    product, error = update_product(
+        db,
+        product_id,
+        product_data,
+    )
+
+    if error is not None:
+
+        status_code = (
+            status.HTTP_404_NOT_FOUND
+            if error == "Product not found"
+            else status.HTTP_400_BAD_REQUEST
+        )
+
+        raise HTTPException(
+            status_code=status_code,
             detail=error,
         )
 

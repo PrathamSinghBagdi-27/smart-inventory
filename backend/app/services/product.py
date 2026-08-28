@@ -4,7 +4,10 @@ from sqlalchemy.orm import Session
 from backend.app.models.category import Category
 from backend.app.models.product import Product
 from backend.app.models.supplier import Supplier
-from backend.app.schemas.product import ProductCreate
+from backend.app.schemas.product import (
+    ProductCreate,
+    ProductUpdate,
+)
 
 
 def get_products(db: Session) -> list[Product]:
@@ -50,6 +53,63 @@ def create_product(
     )
 
     db.add(product)
+    db.commit()
+    db.refresh(product)
+
+    return product, None
+
+
+
+def update_product(
+    db: Session,
+    product_id: int,
+    product_data: ProductUpdate,
+) -> tuple[Product | None, str | None]:
+
+    product = db.get(Product, product_id)
+
+    if product is None:
+        return None, "Product not found"
+
+    category = db.get(
+        Category,
+        product_data.category_id,
+    )
+
+    if category is None:
+        return None, "Category not found"
+
+    if product_data.supplier_id is not None:
+
+        supplier = db.get(
+            Supplier,
+            product_data.supplier_id,
+        )
+
+        if supplier is None:
+            return None, "Supplier not found"
+
+    existing_product = db.scalar(
+        select(Product).where(
+            Product.sku == product_data.sku,
+            Product.id != product_id,
+        )
+    )
+
+    if existing_product is not None:
+        return (
+            None,
+            "A product with this SKU already exists",
+        )
+
+    product.sku = product_data.sku
+    product.name = product_data.name
+    product.category_id = product_data.category_id
+    product.supplier_id = product_data.supplier_id
+    product.price = product_data.price
+    product.current_stock = product_data.current_stock
+    product.reorder_level = product_data.reorder_level
+
     db.commit()
     db.refresh(product)
 
