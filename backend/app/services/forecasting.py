@@ -197,6 +197,18 @@ def get_inventory_intelligence(
         for item in forecasts
     )
 
+    print("\n=== INVENTORY INTELLIGENCE ===")
+
+    for item in forecasts:
+        print(
+            item["product_name"],
+            "| Stock:", item["current_stock"],
+            "| Demand:", item["predicted_daily_demand"],
+            "| Days:", item["days_of_stock"],
+            "| Risk:", item["stockout_risk"],
+            "| Reorder:", item["recommended_reorder"],
+        )
+
     return {
         "total_products_analyzed": len(forecasts),
         "high_risk_products": len(high_risk),

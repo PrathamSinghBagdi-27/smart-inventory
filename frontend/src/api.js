@@ -41,3 +41,118 @@ export async function getInventoryForecast() {
     '/api/v1/forecast/inventory'
   )
 }
+
+
+export async function getProducts() {
+  return fetchJSON(
+    '/api/v1/products'
+  )
+}
+
+export async function getProduct(productId) {
+  return fetchJSON(
+    `/api/v1/products/${productId}`
+  )
+}
+
+
+
+export async function createProduct(productData) {
+  const response = await fetch(
+    `${API_BASE}/api/v1/products`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(productData),
+    }
+  )
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null)
+
+    throw new Error(
+      errorData?.detail ||
+      `API request failed: ${response.status}`
+    )
+  }
+
+  return response.json()
+}
+
+
+
+export async function getCategories() {
+  return fetchJSON(
+    '/api/v1/categories'
+  )
+}
+
+export async function createCategory(name) {
+  const response = await fetch(
+    `${API_BASE}/api/v1/categories`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name,
+      }),
+    }
+  )
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null)
+
+    throw new Error(
+      errorData?.detail ||
+      `Category creation failed: ${response.status}`
+    )
+  }
+
+  return response.json()
+}
+
+
+
+
+export async function getSuppliers() {
+  return fetchJSON(
+    '/api/v1/suppliers'
+  )
+}
+
+export async function createSupplier(
+  name,
+  contact_email = null,
+  phone = null
+) {
+  const response = await fetch(
+    `${API_BASE}/api/v1/suppliers`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name,
+        contact_email,
+        phone,
+      }),
+    }
+  )
+
+  if (!response.ok) {
+    const errorData =
+      await response.json().catch(() => null)
+
+    throw new Error(
+      errorData?.detail ||
+      `Supplier creation failed: ${response.status}`
+    )
+  }
+
+  return response.json()
+}
